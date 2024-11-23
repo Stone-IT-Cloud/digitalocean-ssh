@@ -1,0 +1,38 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+env:
+  GEMINI_MODEL: "gemini-1.5-pro-latest"
+
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    name: AI review
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: Stone-IT-Cloud/gemini-code-review-action@0.0.2
+        name: "Code Review by Gemini AI"
+        id: review
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_repository: ${{ github.repository }}
+          github_pull_request_number: ${{ github.event.pull_request.number }}
+          git_commit_hash: ${{ github.event.pull_request.head.sha }}
+          model: ${{ env.GEMINI_MODEL || 'gemini-1.5-pro-latest' }}
+          pull_request_diff: ${{ github.event.pull_request.diff }}
+          extra_prompt: |-
+            Please write your review in English as an experienced Golang developer.
+          log_level: "INFO"
+      - name: Check for errors (example)
+        if: steps.review.outcome != 'success'
+        run: |
+          echo "Gemini review failed!"
+          exit 1
