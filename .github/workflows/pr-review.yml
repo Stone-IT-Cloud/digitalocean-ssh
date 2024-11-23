@@ -22,6 +22,7 @@ jobs:
   
   static-analysis:
     name: Static Code Analysis
+    needs: [gitleaks-scan, scan-dependencies]
     runs-on: ubuntu-latest
 
     permissions:
