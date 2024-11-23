@@ -15,24 +15,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: "get-diff-of-pull-request"
+      - name: "Get Diff"
         id: get_diff
-        shell: bash
-        env:
-          PULL_REQUEST_HEAD_REF: "${{ github.event.pull_request.head.ref }}"
-          PULL_REQUEST_BASE_REF: "${{ github.event.pull_request.base.ref }}"
-        run: |-
-          git fetch origin "${{ env.PULL_REQUEST_HEAD_REF }}"
-          git fetch origin "${{ env.PULL_REQUEST_BASE_REF }}"
-          git checkout "${{ env.PULL_REQUEST_HEAD_REF }}"
-          git diff "origin/${{ env.PULL_REQUEST_BASE_REF }}" > "diff.txt"
-          {
-            echo "pull_request_diff<<EOF";
-            cat "diff.txt";
-            echo 'EOF';
-          } >> $GITHUB_OUTPUT
-          cat diff.txt
-      - uses: Stone-IT-Cloud/gemini-code-review-action@1b6ece5e9e477dc01312f3f17a08c0a77395eec7
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const diff = await github.request('GET ${{ github.event.pull_request.diff_url }}');
+            core.setOutput('pull_request_diff', `pull_request_diff<<EOF\n${diff.data}\nEOF`);
+      - uses: Stone-IT-Cloud/gemini-code-review-action@0.0.2
         name: "Code Review by Gemini AI"
         id: review
         with:
@@ -44,7 +34,6 @@ jobs:
           model: "gemini-1.5-pro-latest"
           pull_request_diff: |-
             ${{ steps.get_diff.outputs.pull_request_diff }}
-          pull_request_chunk_size: "20000"
           extra_prompt: |-
             Please write your review in English as an experienced Golang developer.
           log_level: "DEBUG"
