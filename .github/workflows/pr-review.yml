@@ -26,7 +26,7 @@ jobs:
           github_repository: ${{ github.repository }}
           github_pull_request_number: ${{ github.event.pull_request.number }}
           git_commit_hash: ${{ github.event.pull_request.head.sha }}
-          model: ${{ env.GEMINI_MODEL || 'gemini-1.5-pro-latest' }}
+          model: ${{ env.GEMINI_MODEL }}
           pull_request_diff: ${{ github.event.pull_request.diff }}
           extra_prompt: |-
             Please write your review in English as an experienced Golang developer.
@@ -36,3 +36,28 @@ jobs:
         run: |
           echo "Gemini review failed!"
           exit 1
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      # required for all workflows
+      security-events: write
+      # only required for workflows in private repositories
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
