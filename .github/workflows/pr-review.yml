@@ -114,6 +114,8 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     needs: [gitleaks-scan, lint, scan-dependencies, static-analysis]
+    env:
+      DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
