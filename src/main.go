@@ -1,10 +1,10 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Alejandro Cavallo <alejandro.cavallo@stoneitcloud.com>
 
 */
 package main
 
-import "gocm/cmd"
+import "docmd/cmd"
 
 func main() {
 	cmd.Execute()
