@@ -11,7 +11,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-func authenticate() (*godo.Client, error) {
+var authenticate = func () (*godo.Client, error) {
 	token := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if token == "" {
 		return nil, errors.New("the environment variable DIGITALOCEAN_ACCESS_TOKEN is not set")
