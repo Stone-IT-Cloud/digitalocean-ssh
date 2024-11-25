@@ -124,7 +124,7 @@ jobs:
           go-version: stable
 
       - name: Test
-        run: make test-ci
+        run: cd src; make test-ci
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
@@ -132,3 +132,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
           flags: unittests
+          directory: ./src
