@@ -1,23 +1,26 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Alejandro Cavallo <alejandro.cavallo@stoneitcloud.com>
 */
 package cmd
 
 import (
+	"docmd/pkgs/droplets"
+
 	"github.com/spf13/cobra"
 )
 
 // dropletCmd represents the droplet command
-var dropletCmd = &cobra.Command{
-	Use:   "droplet",
-	Short: "Interact with the account's droplets",
-	Long: `Interact with the account's droplets. You can list, ssh into, and trigger backups for droplets.`,
+var dropletSshCmd = &cobra.Command{
+	Use:   "ssh",
+	Short: "SSH into a droplet",
+	Long: `SSH into a droplet. This command takes no arguments.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		droplets.SshDropletUi()
+	},
 }
 
 func init() {
-	dropletCmd.AddCommand(dropletListCmd)
-	dropletCmd.AddCommand(dropletSshCmd)
-	rootCmd.AddCommand(dropletCmd)
+	rootCmd.AddCommand(dropletListCmd)
 
 	// Here you will define your flags and configuration settings.
 
