@@ -16,6 +16,7 @@ type model struct {
     selected int   // which to-do items are 
 	currentPage int
 	lastPage bool
+	fetching bool
 }
 
 func getDroplets(page int, pageSize int) ([]DropletBasicInfo, bool, error) {
@@ -41,6 +42,7 @@ func initialModel() model {
 		selected: 0,
 		currentPage: currentPage,
 		lastPage: true,
+		fetching: true,
 	}
 }
 
@@ -69,6 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case UpdateDropletListMsg:
 			m.choices = msg.droplets
 			m.lastPage = msg.lastPage
+			m.fetching = false
 		
 		// Is it a key press?
     	case tea.KeyMsg:
@@ -80,11 +83,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "up", "k":
 					if m.cursor > 0 {
 						m.cursor--
+						return m, nil
+					}
+
+					//if we're not in the first page get the previous one
+					if m.currentPage > 1 {
+						m.currentPage--
+						droplets, lastPage, err := getDroplets(m.currentPage, PageSize)
+						if err != nil {
+							log.Fatalf("Failed to retrieve droplets from DigitalOcean API: %v", err)
+						}
+						m.choices = droplets
+						m.lastPage = lastPage
+						m.cursor = len(m.choices)-1
 					}
 				// The "down" and "j" keys move the cursor down
 				case "down", "j":
 					if m.cursor < len(m.choices)-1 {
 						m.cursor++
+						return m, nil
+					}
+					//if we're not in the last page get the next one
+					if m.lastPage == false {
+						m.currentPage++
+						droplets, lastPage, err := getDroplets(m.currentPage, PageSize)
+						if err != nil {
+							log.Fatalf("Failed to retrieve droplets from DigitalOcean API: %v", err)
+						}
+						m.choices = droplets
+						m.lastPage = lastPage
+						m.cursor = 0
 					}
 				case " ":
 					//TODO: ADD A METHOD TO GET THE NEXT PAGE OF DROPLETS
@@ -110,7 +138,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
     // Header
     s := "What Droplet you want to log into?\n\n"
-
+	if m.fetching {
+		s += "Please wait while we fetch the droplets...\n"
+	}else{
+		if m.currentPage > 1 && m.cursor == 0 {
+			s += "\nPress ⬆️ up to load previous droplets.\n"
+		}else{
+			s += "\n \n"
+		}
+	}
     // Iterate over our choices
     for i, choice := range m.choices {
 
@@ -125,8 +161,10 @@ func (m model) View() string {
     }
 
     // The footer
-	if m.lastPage == false {
-		s += "\nPress spacebar to load more droplets.\n"
+	if m.lastPage == false && m.cursor == len(m.choices)-1 {
+		s += "\nPress ⬇️ down to load more droplets.\n"
+	}else{
+		s += "\n \n"
 	}
 
     s += "\nPress ⬆️ up or ⬇️ down arrows to select, enter to ssh into, or q to quit.\n"
