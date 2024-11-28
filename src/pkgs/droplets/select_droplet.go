@@ -3,9 +3,12 @@ package droplets
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/term"
 )
 
 const PageSize = 4
@@ -67,6 +70,73 @@ func getDropletFirstPage() tea.Msg {
 	return UpdateDropletListMsg{droplets: droplets, lastPage: lastPage}
 }
 
+func createSshTerminal(ip string){
+	// private key for auth
+	key, err := os.ReadFile("/home/alejandro/.ssh/id_rsa")
+	if err != nil {
+		log.Fatalf("Failed to read private key: %v", err)
+	}
+	
+	// create signer for auth 
+	signer, err := ssh.ParsePrivateKey(key)
+	// define auth method  
+	auth := ssh.PublicKeys(signer)
+
+	hostKeyCb := func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		return nil
+	}
+	
+	// client config
+	config := &ssh.ClientConfig{
+		User: "root",
+		Auth: []ssh.AuthMethod{
+		auth,
+		},
+		HostKeyCallback: hostKeyCb,
+	}
+
+
+	// dial SSH connection
+	conn, err := ssh.Dial("tcp", ip+":22", config)
+	if err != nil {
+		log.Fatalf("Failed to dial SSH connection: %v", err)
+	}
+	defer conn.Close()
+
+	// create new SSH session
+	session, err := conn.NewSession()
+	defer session.Close()
+	if err != nil {
+		log.Fatalf("Failed to create SSH session: %v", err)
+	}
+	
+	width, height, err := term.GetSize(int(os.Stdin.Fd()))
+	if err != nil {
+		log.Fatalf("Failed to get terminal size: %v", err)
+	}
+	if err := session.RequestPty("xterm", width, height, ssh.TerminalModes{}); err != nil {
+        log.Fatalf("Failed to request PTY: %v", err)
+    }
+	// Start shell
+    session.Stdout = os.Stdout
+    session.Stderr = os.Stderr
+    session.Stdin = os.Stdin
+
+	if err := session.Shell(); err != nil {
+        log.Fatalf("Failed to start shell: %v", err)
+    }
+	// Wait for the session to end
+    if err := session.Wait(); err != nil {
+		if exitError, ok := err.(*ssh.ExitError); ok && exitError.ExitStatus() == 130 {
+            // Ignore exit status 130 (terminated by SIGINT)
+            fmt.Println("SSH session finished")
+        } else {
+            log.Fatalf("Failed to wait for session: %v", err)
+        }
+    }
+
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case UpdateDropletListMsg:
@@ -115,20 +185,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.lastPage = lastPage
 				m.cursor = 0
 			}
-		case " ":
-			//TODO: ADD A METHOD TO GET THE NEXT PAGE OF DROPLETS
-			if m.lastPage == false {
-				m.currentPage++
-				droplets, lastPage, err := getDroplets(m.currentPage, PageSize)
-				if err != nil {
-					log.Fatalf("Failed to retrieve droplets from DigitalOcean API: %v", err)
-				}
-				m.choices = append(m.choices, droplets...)
-				m.lastPage = lastPage
-			}
 
 		case "enter":
 			m.selected = m.cursor
+			sshIntoIP := m.choices[m.selected].PublicAddr
+
+			fmt.Println("Logging into droplet ", m.choices[m.selected].Name, "... ")
+
+			createSshTerminal(sshIntoIP)
+			
 			return m, tea.Quit
 		}
 	}
