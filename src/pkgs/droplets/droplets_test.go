@@ -38,23 +38,24 @@ func TestAuthenticate(t *testing.T) {
 func (m *MockDropletsService) Actions(ctx context.Context, dropletID int, opt *godo.ListOptions) ([]godo.Action, *godo.Response, error) {
 	return nil, nil, nil
 }
+
 type MockDropletsService struct {
-	ListFn func(ctx context.Context, opt *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
-	ListWithGPUsFn func(context.Context, *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
-	ListByNameFn func(context.Context, string, *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
-	ListByTagFn func(context.Context, string, *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
-	GetFn func(context.Context, int) (*godo.Droplet, *godo.Response, error)
-	CreateFn func(context.Context, *godo.DropletCreateRequest) (*godo.Droplet, *godo.Response, error)
-	CreateMultipleFn func(context.Context, *godo.DropletMultiCreateRequest) ([]godo.Droplet, *godo.Response, error)
-	DeleteFn func(context.Context, int) (*godo.Response, error)
-	DeleteByTagFn func(context.Context, string) (*godo.Response, error)
-	KernelsFn func(context.Context, int, *godo.ListOptions) ([]godo.Kernel, *godo.Response, error)
-	SnapshotsFn func(context.Context, int, *godo.ListOptions) ([]godo.Image, *godo.Response, error)
-	BackupsFn func(context.Context, int, *godo.ListOptions) ([]godo.Image, *godo.Response, error)
-	ActionsFn func(context.Context, int, *godo.ListOptions) ([]godo.Action, *godo.Response, error)
-	NeighborsFn func(context.Context, int) ([]godo.Droplet, *godo.Response, error)
-	GetBackupPolicyFn func(context.Context, int) (*godo.DropletBackupPolicy, *godo.Response, error)
-	ListBackupPoliciesFn func(context.Context, *godo.ListOptions) (map[int]*godo.DropletBackupPolicy, *godo.Response, error)
+	ListFn                        func(ctx context.Context, opt *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
+	ListWithGPUsFn                func(context.Context, *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
+	ListByNameFn                  func(context.Context, string, *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
+	ListByTagFn                   func(context.Context, string, *godo.ListOptions) ([]godo.Droplet, *godo.Response, error)
+	GetFn                         func(context.Context, int) (*godo.Droplet, *godo.Response, error)
+	CreateFn                      func(context.Context, *godo.DropletCreateRequest) (*godo.Droplet, *godo.Response, error)
+	CreateMultipleFn              func(context.Context, *godo.DropletMultiCreateRequest) ([]godo.Droplet, *godo.Response, error)
+	DeleteFn                      func(context.Context, int) (*godo.Response, error)
+	DeleteByTagFn                 func(context.Context, string) (*godo.Response, error)
+	KernelsFn                     func(context.Context, int, *godo.ListOptions) ([]godo.Kernel, *godo.Response, error)
+	SnapshotsFn                   func(context.Context, int, *godo.ListOptions) ([]godo.Image, *godo.Response, error)
+	BackupsFn                     func(context.Context, int, *godo.ListOptions) ([]godo.Image, *godo.Response, error)
+	ActionsFn                     func(context.Context, int, *godo.ListOptions) ([]godo.Action, *godo.Response, error)
+	NeighborsFn                   func(context.Context, int) ([]godo.Droplet, *godo.Response, error)
+	GetBackupPolicyFn             func(context.Context, int) (*godo.DropletBackupPolicy, *godo.Response, error)
+	ListBackupPoliciesFn          func(context.Context, *godo.ListOptions) (map[int]*godo.DropletBackupPolicy, *godo.Response, error)
 	ListSupportedBackupPoliciesFn func(context.Context) ([]*godo.SupportedBackupPolicy, *godo.Response, error)
 }
 
@@ -94,9 +95,12 @@ func (m *MockDropletsService) Snapshots(context.Context, int, *godo.ListOptions)
 func (m *MockDropletsService) Backups(context.Context, int, *godo.ListOptions) ([]godo.Image, *godo.Response, error) {
 	panic("not implemented")
 }
-/* func (m *MockDropletsService) Actions(context.Context, int, *godo.ListOptions) ([]godo.Action, *godo.Response, error) {
-	panic("not implemented")
-} */
+
+/*
+	 func (m *MockDropletsService) Actions(context.Context, int, *godo.ListOptions) ([]godo.Action, *godo.Response, error) {
+		panic("not implemented")
+	}
+*/
 func (m *MockDropletsService) Neighbors(context.Context, int) ([]godo.Droplet, *godo.Response, error) {
 	panic("not implemented")
 }
@@ -185,5 +189,3 @@ func TestListDroplets(t *testing.T) {
 	assert.Contains(t, output, "203.0.113.1")
 	assert.Contains(t, output, "192.168.1.1")
 }
-
-

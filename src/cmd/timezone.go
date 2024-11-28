@@ -1,14 +1,13 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
-	"fmt"
-	"log"
 	"docmd/pkgs/timeutil"
+	"fmt"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // timezoneCmd represents the timezone command
@@ -23,7 +22,7 @@ var timezoneCmd = &cobra.Command{
 		timezone := args[0]
 		currentTime, err := timeutil.GetTimeInTimezone(timezone)
 		if err != nil {
-		 log.Fatalln("The timezone string is invalid")
+			log.Fatalln("The timezone string is invalid")
 		}
 		fmt.Println(currentTime)
 	},

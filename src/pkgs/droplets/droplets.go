@@ -14,34 +14,34 @@ import (
 )
 
 func isPrivateIp(ip string) bool {
-//checks if ip is a private IP address or loopback and return true in that case
-//https://en.wikipedia.org/wiki/Private_network
-		// Check if the IP is a loopback address
-		if ip == "127.0.0.1" {
+	//checks if ip is a private IP address or loopback and return true in that case
+	//https://en.wikipedia.org/wiki/Private_network
+	// Check if the IP is a loopback address
+	if ip == "127.0.0.1" {
+		return true
+	}
+
+	// Check if the IP is in the private IP ranges
+	privateIPBlocks := []string{
+		"10.0.0.0/8",
+		"172.16.0.0/12",
+		"192.168.0.0/16",
+	}
+
+	for _, block := range privateIPBlocks {
+		_, ipNet, err := net.ParseCIDR(block)
+		if err != nil {
+			log.Fatalf("Failed to parse CIDR block: %v", err)
+		}
+		if ipNet.Contains(net.ParseIP(ip)) {
 			return true
 		}
+	}
 
-		// Check if the IP is in the private IP ranges
-		privateIPBlocks := []string{
-			"10.0.0.0/8",
-			"172.16.0.0/12",
-			"192.168.0.0/16",
-		}
+	return false
+}
 
-		for _, block := range privateIPBlocks {
-			_, ipNet, err := net.ParseCIDR(block)
-			if err != nil {
-				log.Fatalf("Failed to parse CIDR block: %v", err)
-			}
-			if ipNet.Contains(net.ParseIP(ip)) {
-				return true
-			}
-		}
-
-		return false
-}	
-
-var authenticate = func () (*godo.Client, error) {
+var authenticate = func() (*godo.Client, error) {
 	token := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if token == "" {
 		return nil, errors.New("the environment variable DIGITALOCEAN_ACCESS_TOKEN is not set")
@@ -49,18 +49,19 @@ var authenticate = func () (*godo.Client, error) {
 	client := godo.NewFromToken(token)
 	return client, nil
 }
+
 func doListAllDroplets(page int, pageSize int) ([]godo.Droplet, bool, error) {
 	lastPage := false
 	client, err := authenticate()
 	options := &godo.ListOptions{
-		Page: page,
-		PerPage: pageSize,
+		Page:         page,
+		PerPage:      pageSize,
 		WithProjects: true,
 	}
 	if err != nil {
 		log.Fatalf("Error authenticating: %v", err)
 	}
-	
+
 	d, resp, err := client.Droplets.List(context.Background(), options)
 	if err != nil {
 		return nil, false, err
@@ -110,13 +111,13 @@ func ListDroplets() {
 	t.SetStyle(table.StyleColoredDark)
 	t.AppendHeader(table.Row{"id", "name", "region", "image_name", "image_id", "size", "price $/mo", "public_addr", "private_addr"})
 	t.SortBy([]table.SortBy{
-	    {Name: "region", Mode: table.Asc},
-	    {Name: "name", Mode: table.Asc},
-    })
+		{Name: "region", Mode: table.Asc},
+		{Name: "name", Mode: table.Asc},
+	})
 
-	page:=1
-	pageSize:=20
-	
+	page := 1
+	pageSize := 20
+
 	for {
 		d, lastPage, err := doListAllDroplets(page, pageSize)
 		if err != nil {
@@ -138,10 +139,10 @@ func ListDroplets() {
 			if len(droplet.Networks.V4) >= 2 {
 				publicAddr = droplet.Networks.V4[1].IPAddress
 			}
-					
+
 			t.AppendRow([]interface{}{dropletID, dropletName, dropletRegion, imageName, imageID, dropletSize, fmt.Sprintf("$%.2f", priceMonthly), publicAddr, privateAddr})
 		}
-	
+
 		t.Render()
 		page++
 		if lastPage {
@@ -151,25 +152,24 @@ func ListDroplets() {
 }
 
 type DropletBasicInfo struct {
-	ID int
-	Name string
-	Region string
+	ID          int
+	Name        string
+	Region      string
 	PrivateAddr string
-	PublicAddr string
+	PublicAddr  string
 }
 
 func SshDroplet() {
 	var droplets []DropletBasicInfo
 
 	fmt.Println("SSH into a droplet")
-	page:=1
-	pageSize:=4
+	page := 1
+	pageSize := 4
 	d, lastPage, err := doListAllDroplets(page, pageSize)
 	if err != nil {
 		log.Fatalf("Failed to retrieve droplets from DigitalOcean API: %v", err)
 	}
 	fmt.Println(lastPage)
-
 
 	for _, droplet := range d {
 		privateAddr := ""

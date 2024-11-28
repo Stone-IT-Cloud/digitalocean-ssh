@@ -11,7 +11,7 @@ import (
 var dropletCmd = &cobra.Command{
 	Use:   "droplet",
 	Short: "Interact with the account's droplets",
-	Long: `Interact with the account's droplets. You can list, ssh into, and trigger backups for droplets.`,
+	Long:  `Interact with the account's droplets. You can list, ssh into, and trigger backups for droplets.`,
 }
 
 func init() {

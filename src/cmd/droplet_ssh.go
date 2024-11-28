@@ -13,7 +13,7 @@ import (
 var dropletSshCmd = &cobra.Command{
 	Use:   "ssh",
 	Short: "SSH into a droplet",
-	Long: `SSH into a droplet. This command takes no arguments.`,
+	Long:  `SSH into a droplet. This command takes no arguments.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		droplets.SshDropletUi()
 	},

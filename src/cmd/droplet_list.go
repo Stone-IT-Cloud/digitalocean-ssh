@@ -1,6 +1,5 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -13,7 +12,7 @@ import (
 var dropletListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all droplets",
-	Long: `List all droplets in the account. This command takes no arguments.`,
+	Long:  `List all droplets in the account. This command takes no arguments.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		droplets.ListDroplets()
 	},

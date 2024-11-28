@@ -1,6 +1,5 @@
 /*
 Copyright © 2024 Alejandro Cavallo <alejandro.cavallo@stoneitcloud.com>
-
 */
 package main
 
